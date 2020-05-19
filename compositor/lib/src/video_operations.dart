@@ -97,7 +97,7 @@ class VideoOperations {
     args.add('-filter_complex');
     args.add(buildGridFilter(cells, width, height));
     print('duration: ${formatFfmpegDuration(duration)}');
-    args.addAll(['-t', formatFfmpegDuration(duration)]);
+    args.addAll(['-t', formatFfmpegDuration(duration), '-an']);
     args.add(outputPath);
 
     final ProcessResult result = await ps.run(ffmpeg, args);
@@ -116,8 +116,7 @@ class VideoOperations {
     for (int i = 0; i < cells.length; i++) {
       final GridCell cell = cells[i];
 
-      double appearSeconds = (cell.initialX - width) / cell.pixelsPerSecond;
-      appearSeconds = max(appearSeconds, 0);
+      double appearSeconds = cell.startTime.inMicroseconds/ 1e6;
       buffer.write('[${i}:v] setpts=PTS-STARTPTS+$appearSeconds/TB [tadjusted$i];\n');
 
       if (i == 0) {
@@ -137,11 +136,8 @@ class VideoOperations {
   }
 
   static String formatFfmpegDuration(Duration duration) {
-    var seconds = duration.inSeconds;
-    var micros = duration.inMicroseconds;
-    var secondsModulo = micros % 1e6;
-    var secondPart = secondsModulo == 0 ? 0 : (1e6 / secondsModulo).floor();
-    return '$seconds.$secondPart';
+    final int micros = duration.inMicroseconds;
+    return '${micros / 1e6}';
   }
 }
 
@@ -150,6 +146,7 @@ class GridCell {
   final int initialX;
   final int y;
   final double pixelsPerSecond;
+  final Duration startTime;
 
-  GridCell({this.filePath, this.initialX, this.y, this.pixelsPerSecond});
+  GridCell({this.filePath, this.initialX, this.y, this.pixelsPerSecond, this.startTime});
 }

@@ -11,15 +11,15 @@ main(List<String> arguments) async {
       gridSquareSize: 10,
       width: 1920,
       height: 1080,
-      trackCount: 5000,
+      trackCount: 2500,
   );
 
   try {
-//    for (int i = 0; i < 600; i++) {
+//    for (int i = 0; i < 250; i++) {
 //      print('preparing atom $i');
 //      await compositor.clipAndScaleVisiblePart('/Volumes/external/koolulam/data/2.mov', i, 1, '/Volumes/external/tmp/try1/$i.mov');
 //    }
-    compositor.composite(Duration(seconds: 0), Duration(seconds: 4), '/Volumes/external/tmp/try1/', '/tmp/grid.mov');
+    compositor.composite(Duration(seconds: 0), Duration(seconds: 6), '/Volumes/external/tmp/try1/', '/tmp/grid.mov');
   } catch(e) {
     print(e);
     exit(1);

@@ -17,6 +17,11 @@ void main() {
     Directory(outputDir).deleteSync(recursive: true);
   });
 
+  test('formatFfmpegDuration', () {
+    expect(VideoOperations.formatFfmpegDuration(Duration(seconds: 1)), "1.0");
+    expect(VideoOperations.formatFfmpegDuration(Duration(milliseconds: 500)), "0.5");
+  });
+
   test('Extract wav', () async {
     String out = join(outputDir, 'sample-2-seconds.wav');
 
@@ -38,12 +43,13 @@ void main() {
 
   test('buildGridScript', () async {
     List<GridCell> cells = <GridCell> [
-      GridCell(filePath: '1.mov', initialX: 0, y: 0, pixelsPerSecond: 100),
-      GridCell(filePath: '2.mov', initialX: 0, y: 50, pixelsPerSecond: 100),
-      GridCell(filePath: '3.mov', initialX: 50, y: 0, pixelsPerSecond: 100),
-      GridCell(filePath: '4.mov', initialX: 50, y: 50, pixelsPerSecond: 100),
-      GridCell(filePath: '5.mov', initialX: 100, y: 0, pixelsPerSecond: 100),
-      GridCell(filePath: '6.mov', initialX: 100, y: 50, pixelsPerSecond: 100),
+      GridCell(filePath: '1.mov', initialX: 0, y: 0, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '2.mov', initialX: 0, y: 50, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '3.mov', initialX: 50, y: 0, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '4.mov', initialX: 50, y: 50, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '5.mov', initialX: 100, y: 0, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '6.mov', initialX: 100, y: 50, pixelsPerSecond: 100, startTime: Duration(seconds: 0)),
+      GridCell(filePath: '7.mov', initialX: 150, y: 0, pixelsPerSecond: 100, startTime: Duration(milliseconds: 500)),
     ];
 
     String filter = videoOperations.buildGridFilter(cells, 100, 100);

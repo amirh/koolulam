@@ -57,6 +57,19 @@ class Compositor {
   int get pixelsToScroll => virtualWidth - width;
 
   double get pixelsPerMilliSecond => pixelsToScroll / clipDuration.inMilliseconds;
+  
+  Duration trackVisibleTime(int trackIndex) {
+    if (trackIndex >= trackCount) {
+      throw ArgumentError('Illegal track index $trackIndex. It must be smaller than $trackCount');
+    }
+
+    var column = (trackIndex / gridSquareSize).floor();
+    var columnPixel = column * columnWidth;
+
+    var visibleMicroSecond = max((columnPixel - width) / (pixelsPerMilliSecond/1e3), 0).floor();
+    
+    return Duration(microseconds: visibleMicroSecond);
+  }
 
   ClipPart visibleTrackPart(int trackIndex) {
     if (trackIndex >= trackCount) {
@@ -66,12 +79,12 @@ class Compositor {
     var column = (trackIndex / gridSquareSize).floor();
     var columnPixel = column * columnWidth;
 
-    var visibleMilliSecond = max((columnPixel - width) / pixelsPerMilliSecond, 0).floor();
-    var goneMilliSecond = min((columnPixel + columnWidth) / pixelsPerMilliSecond, clipDuration.inMilliseconds).floor();
+    var visibleMicroSecond = max((columnPixel - width) / (pixelsPerMilliSecond/1e3), 0).floor();
+    var goneMicroSecond = min((columnPixel + columnWidth) / (pixelsPerMilliSecond/1e3), clipDuration.inMicroseconds).floor();
 
     return ClipPart(
-      start: Duration(milliseconds: visibleMilliSecond),
-      duration: Duration(milliseconds: goneMilliSecond - visibleMilliSecond),
+      start: trackVisibleTime(trackIndex),
+      duration: Duration(microseconds: goneMicroSecond - visibleMicroSecond),
     );
   }
 
@@ -95,10 +108,11 @@ class Compositor {
 
     GridCell mapAtomToGridCell(AtomComposition atom) {
       return GridCell(
-          filePath: join(atomsFolder, '${atom.trackIdx}.mov'),
-          initialX: atom.initialX,
-          y: atom.y,
-          pixelsPerSecond: atom.pixelsPerSecond,
+        filePath: join(atomsFolder, '${atom.trackIdx}.mov'),
+        initialX: atom.initialX,
+        y: atom.y,
+        pixelsPerSecond: atom.pixelsPerSecond,
+        startTime: atom.startTime,
       );
     }
 
@@ -131,6 +145,7 @@ class Compositor {
         initialX: offsetAtStart,
         y: y,
         pixelsPerSecond: pixelsPerMilliSecond * 1000,
+        startTime: trackVisibleTime(trackIdx),
       ));
     }
     return composition;
@@ -142,12 +157,13 @@ class AtomComposition {
   final int initialX;
   final int y;
   final double pixelsPerSecond;
+  final Duration startTime;
 
-  AtomComposition({this.trackIdx, this.initialX, this.y, this.pixelsPerSecond});
+  AtomComposition({this.trackIdx, this.initialX, this.y, this.pixelsPerSecond, this.startTime});
 
   @override
   String toString() {
-    return 'AtomComposition{trackIdx: $trackIdx, initialX: $initialX, y: $y, pixelsPerSecond: $pixelsPerSecond}';
+    return 'AtomComposition{trackIdx: $trackIdx, initialX: $initialX, y: $y, pixelsPerSecond: $pixelsPerSecond, startTime: $startTime}';
   }
 
   @override
@@ -158,12 +174,14 @@ class AtomComposition {
               trackIdx == other.trackIdx &&
               initialX == other.initialX &&
               y == other.y &&
-              pixelsPerSecond == other.pixelsPerSecond;
+              pixelsPerSecond == other.pixelsPerSecond &&
+              startTime == other.startTime;
 
   @override
   int get hashCode =>
       trackIdx.hashCode ^
       initialX.hashCode ^
       y.hashCode ^
-      pixelsPerSecond.hashCode;
+      pixelsPerSecond.hashCode ^
+      startTime.hashCode;
 }

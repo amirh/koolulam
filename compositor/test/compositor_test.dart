@@ -138,14 +138,32 @@ void main() {
       trackIdx: 0,
       initialX: 0,
       y: 0,
-      pixelsPerSecond: 30.0
+      pixelsPerSecond: 30.0,
+      startTime: Duration(seconds: 0),
     ));
 
     expect(composition[3], AtomComposition(
-        trackIdx: 3,
-        initialX: 50,
-        y: 50,
-        pixelsPerSecond: 30.0
+      trackIdx: 3,
+      initialX: 50,
+      y: 50,
+      pixelsPerSecond: 30.0,
+      startTime: Duration(seconds: 0),
+    ));
+
+    expect(composition[4], AtomComposition(
+      trackIdx: 4,
+      initialX: 100,
+      y: 0,
+      pixelsPerSecond: 30.0,
+      startTime: Duration(seconds: 0),
+    ));
+
+    expect(composition[7], AtomComposition(
+      trackIdx: 7,
+      initialX: 150,
+      y: 50,
+      pixelsPerSecond: 30.0,
+      startTime: Duration(microseconds: ((50/30)*1e6).floor()),
     ));
   });
 }
