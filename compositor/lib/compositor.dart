@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:compositor/src/video_operations.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' show join;
 
 class ClipPart {
   const ClipPart({
@@ -88,4 +89,81 @@ class Compositor {
       outputPath: outputPath,
     );
   }
+
+  Future<void> composite(Duration start, Duration duration, String atomsFolder, String outputPath) {
+    List<AtomComposition> composition = planComposition(start, duration);
+
+    GridCell mapAtomToGridCell(AtomComposition atom) {
+      return GridCell(
+          filePath: join(atomsFolder, '${atom.trackIdx}.mov'),
+          initialX: atom.initialX,
+          y: atom.y,
+          pixelsPerSecond: atom.pixelsPerSecond,
+      );
+    }
+
+    List<GridCell> cells = composition.map(mapAtomToGridCell).toList();
+    videoOperations.buildGrid(
+        cells: cells, width: width, height: height, outputPath: outputPath,
+    duration: duration,);
+  }
+
+
+  List<AtomComposition> planComposition(Duration start, Duration duration) {
+    int scrollStartPx = (pixelsPerMilliSecond * start.inMilliseconds).floor();
+    int scrollEndPx = scrollStartPx + (pixelsPerMilliSecond * duration.inMilliseconds).floor();
+
+    int firstColumn = (scrollStartPx / columnWidth).floor();
+    int lastColumn = ((scrollEndPx + width) / columnWidth).ceil();
+    int firstTrack = firstColumn * gridSquareSize;
+    int lastTrack = lastColumn * gridSquareSize + gridSquareSize;
+    lastTrack = min(lastTrack, trackCount - 1);
+
+    List<AtomComposition> composition = [];
+    for (int trackIdx = firstTrack; trackIdx <= lastTrack; trackIdx++) {
+      int column = (trackIdx / gridSquareSize).floor();
+      int offsetAtT0 = column * columnWidth;
+      int offsetAtStart = scrollStartPx + offsetAtT0;
+      int row = column == 0 ? trackIdx : trackIdx % gridSquareSize;
+      int y = (row * (height/gridSquareSize)).floor();
+      composition.add(AtomComposition(
+        trackIdx: trackIdx,
+        initialX: offsetAtStart,
+        y: y,
+        pixelsPerSecond: pixelsPerMilliSecond * 1000,
+      ));
+    }
+    return composition;
+  }
+}
+
+class AtomComposition {
+  final int trackIdx;
+  final int initialX;
+  final int y;
+  final double pixelsPerSecond;
+
+  AtomComposition({this.trackIdx, this.initialX, this.y, this.pixelsPerSecond});
+
+  @override
+  String toString() {
+    return 'AtomComposition{trackIdx: $trackIdx, initialX: $initialX, y: $y, pixelsPerSecond: $pixelsPerSecond}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is AtomComposition &&
+              runtimeType == other.runtimeType &&
+              trackIdx == other.trackIdx &&
+              initialX == other.initialX &&
+              y == other.y &&
+              pixelsPerSecond == other.pixelsPerSecond;
+
+  @override
+  int get hashCode =>
+      trackIdx.hashCode ^
+      initialX.hashCode ^
+      y.hashCode ^
+      pixelsPerSecond.hashCode;
 }

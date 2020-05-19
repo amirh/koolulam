@@ -35,6 +35,30 @@ void main() {
     double clapTime = await videoOperations.findClapInVideo(join(testDataDirName, 'sample.mp4'));
     expect(clapTime, 3.3262358276643993);
   });
+
+  test('buildGridScript', () async {
+    List<GridCell> cells = <GridCell> [
+      GridCell(filePath: '1.mov', initialX: 0, y: 0, pixelsPerSecond: 100),
+      GridCell(filePath: '2.mov', initialX: 0, y: 50, pixelsPerSecond: 100),
+      GridCell(filePath: '3.mov', initialX: 50, y: 0, pixelsPerSecond: 100),
+      GridCell(filePath: '4.mov', initialX: 50, y: 50, pixelsPerSecond: 100),
+      GridCell(filePath: '5.mov', initialX: 100, y: 0, pixelsPerSecond: 100),
+      GridCell(filePath: '6.mov', initialX: 100, y: 50, pixelsPerSecond: 100),
+    ];
+
+    String filter = videoOperations.buildGridFilter(cells, 100, 100);
+    String expected = '"\n'
+        'nullsrc=size=100x100 [base];\n'
+        '[base][0:v] overlay=shortest=1:x=0+t*-100.0:y=0[tmp0];\n'
+        '[tmp0][1:v] overlay=shortest=1:x=0+t*-100.0:y=50[tmp1];\n'
+        '[tmp1][2:v] overlay=shortest=1:x=50+t*-100.0:y=0[tmp2];\n'
+        '[tmp2][3:v] overlay=shortest=1:x=50+t*-100.0:y=50[tmp3];\n'
+        '[tmp3][4:v] overlay=shortest=1:x=100+t*-100.0:y=0[tmp4];\n'
+        '[tmp4][5:v] overlay=shortest=1:x=100+t*-100.0:y=50\n'
+        '"\n';
+
+    expect(filter, expected);
+  });
 }
 
 Future<bool> filesEqual(String file1, String file2) async {

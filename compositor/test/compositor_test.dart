@@ -119,4 +119,33 @@ void main() {
         outputPath: 'out.mp4',
     ));
   });
+
+  test('planComposition', () {
+    Compositor compositor = Compositor(
+      clipDuration: Duration(seconds: 10),
+      gridSquareSize: 2,
+      width: 100,
+      height: 100,
+      trackCount: 16,
+    );
+
+    List<AtomComposition> composition = compositor.planComposition(
+        Duration(seconds: 0), Duration(seconds: 10));
+
+    expect(composition.length, 16);
+
+    expect(composition[0], AtomComposition(
+      trackIdx: 0,
+      initialX: 0,
+      y: 0,
+      pixelsPerSecond: 30.0
+    ));
+
+    expect(composition[3], AtomComposition(
+        trackIdx: 3,
+        initialX: 50,
+        y: 50,
+        pixelsPerSecond: 30.0
+    ));
+  });
 }
