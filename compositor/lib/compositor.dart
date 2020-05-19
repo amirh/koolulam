@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:compositor/src/video_operations.dart';
 import 'package:meta/meta.dart';
 
 class ClipPart {
@@ -36,6 +37,7 @@ class Compositor {
     @required this.width,
     @required this.height,
     @required this.trackCount,
+    this.videoOperations = const VideoOperations(),
   });
 
   final Duration clipDuration;
@@ -43,6 +45,7 @@ class Compositor {
   final int width;
   final int height;
   final int trackCount;
+  final VideoOperations videoOperations;
 
   int get columnCount => (trackCount / gridSquareSize).ceil();
 
@@ -68,6 +71,21 @@ class Compositor {
     return ClipPart(
       start: Duration(milliseconds: visibleMilliSecond),
       duration: Duration(milliseconds: goneMilliSecond - visibleMilliSecond),
+    );
+  }
+
+  Future<void> clipAndScaleVisiblePart(String inputPath, int trackIndex, double secondsBeforeClap, String outputPath) async {
+    ClipPart part = visibleTrackPart(trackIndex);
+    double clapSeconds = await videoOperations.findClapInVideo(inputPath);
+    int startMicros = (1e6 * (clapSeconds - secondsBeforeClap)).floor();
+
+    await videoOperations.clipAndScale(
+      inputPath: inputPath,
+      startTime: part.start + Duration(microseconds: startMicros),
+      duration: part.duration,
+      width: (width / gridSquareSize).floor(),
+      height: (height / gridSquareSize).floor(),
+      outputPath: outputPath,
     );
   }
 }
