@@ -133,11 +133,12 @@ class Compositor {
     int lastTrack = lastColumn * gridSquareSize + gridSquareSize;
     lastTrack = min(lastTrack, trackCount - 1);
 
+    print('compositing tracks $firstTrack - $lastTrack');
     List<AtomComposition> composition = [];
     for (int trackIdx = firstTrack; trackIdx <= lastTrack; trackIdx++) {
       int column = (trackIdx / gridSquareSize).floor();
       int offsetAtT0 = column * columnWidth;
-      int offsetAtStart = scrollStartPx + offsetAtT0;
+      int offsetAtStart = offsetAtT0 - scrollStartPx;
       int row = column == 0 ? trackIdx : trackIdx % gridSquareSize;
       int y = (row * (height/gridSquareSize)).floor();
       composition.add(AtomComposition(
@@ -145,7 +146,7 @@ class Compositor {
         initialX: offsetAtStart,
         y: y,
         pixelsPerSecond: pixelsPerMilliSecond * 1000,
-        startTime: trackVisibleTime(trackIdx),
+        startTime: trackVisibleTime(trackIdx) - start,
       ));
     }
     return composition;

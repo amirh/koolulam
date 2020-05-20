@@ -166,4 +166,43 @@ void main() {
       startTime: Duration(microseconds: ((50/30)*1e6).floor()),
     ));
   });
+
+  test('planComposition', () {
+    Compositor compositor = Compositor(
+      clipDuration: Duration(seconds: 10),
+      gridSquareSize: 2,
+      width: 100,
+      height: 100,
+      trackCount: 8,
+    );
+
+    List<AtomComposition> composition = compositor.planComposition(
+        Duration(seconds: 5), Duration(seconds: 5));
+
+    expect(composition.length, 6);
+
+    expect(composition[0], AtomComposition(
+      trackIdx: 2,
+      initialX: 0,
+      y: 0,
+      pixelsPerSecond: 10.0,
+      startTime: Duration(seconds: 0),
+    ));
+
+    expect(composition[3], AtomComposition(
+      trackIdx: 5,
+      initialX: 50,
+      y: 50,
+      pixelsPerSecond: 10.0,
+      startTime: Duration(seconds: 0),
+    ));
+
+    expect(composition[4], AtomComposition(
+      trackIdx: 6,
+      initialX: 100,
+      y: 0,
+      pixelsPerSecond: 10.0,
+      startTime: Duration(seconds: 0),
+    ));
+  });
 }
