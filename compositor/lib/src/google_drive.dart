@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:compositor/src/secrets.dart';
 import "package:http/http.dart" as http;
@@ -58,5 +60,34 @@ class GoogleDrive {
         mimeType: file['mimeType'],
       );
     }).toList();
+  }
+
+  Future<void> downloadFile(String fileId, String outputPath) async {
+
+    final Uri uri = Uri.https(
+      'www.googleapis.com',
+      '/drive/v3/files/$fileId',
+      <String, String> {
+        'alt': 'media'
+      },
+    );
+
+    List<String> args = <String> [
+      '-H',
+      'Authorization: Bearer ${_client.credentials.accessToken.data}',
+      '-o',
+      outputPath,
+      uri.toString()
+    ];
+
+    Process process = await Process.start('curl', args);
+    stdout.addStream(process.stdout);
+    stderr.addStream(process.stderr);
+
+    int exitCode = await process.exitCode;
+
+    if (exitCode != 0) {
+      throw Exception('failed downloading $fileId');
+    }
   }
 }
