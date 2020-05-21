@@ -37,8 +37,11 @@ void main() {
   });
 
   test('Find clap in video', () async {
-    double clapTime = await videoOperations.findClapInVideo(join(testDataDirName, 'sample.mp4'));
-    expect(clapTime, 3.3262358276643993);
+    Future<double> findClap(String file) {
+      return videoOperations.findClapInVideo(join(testDataDirName, file));
+    }
+    expect(await findClap('sample.mp4'), 3.3262358276643993);
+    expect(await findClap('fixyou.aac'), 32.938);
   });
 
   test('buildGridScript', () async {
