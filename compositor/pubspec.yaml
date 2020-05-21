@@ -11,6 +11,8 @@ dependencies:
   meta: ^1.1.8
   args: ^1.6.0
   path: ^1.6.0
+  googleapis_auth: ^0.2.11+1
+  http: ^0.12.1
 
 dev_dependencies:
   pedantic: ^1.8.0
